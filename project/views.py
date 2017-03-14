@@ -1,6 +1,7 @@
 import sqlite3
 from functools import wraps
 
+from forms import AddTaskForm
 from flask import Flask, flash, redirect, render_template, request, session, url_for, g
 
 #config
@@ -49,12 +50,23 @@ def login():
 @login_required
 def tasks():
     g.db = connect_db()
-    cursor = g.db.execute('select name, due_date, priority, task_id from tasks where status = 1')
-    open_tasks = [dict( name=row[0], due_date=row[1], priority=row[2], task_id=row[3]) for row in cursor.fetchall()]
-    cursor = g.db.execute('select name, due_date, priority, task_id from tasks where status = 0')
-    closed_tasks = [dict( name=row[0], due_date=row[1], priority=row[2], task_id=row[3]) for row in cursor.fetchall()]
+    cursor = g.db.execute(
+                'select name, due_date, priority, task_id from tasks where status = 1'
+                )
+    open_tasks = [
+            dict( name=row[0], due_date=row[1], priority=row[2],
+                  task_id=row[3]) for row in cursor.fetchall()
+                  ]
+    cursor = g.db.execute(
+                'select name, due_date, priority, task_id from tasks where status = 0'
+                )
+    closed_tasks = [
+            dict( name=row[0], due_date=row[1], priority=row[2],
+                    task_id=row[3]) for row in cursor.fetchall()
+                    ]
     g.db.close()
-    return render_template('tasks.html',
+    return render_template(
+                            'tasks.html',
                             form = AddTaskForm(request.form),
                             open_tasks = open_tasks,
                             closed_tasks = closed_tasks
@@ -64,7 +76,7 @@ def tasks():
 #Add new tasks
 @app.route('/add/', methods=['POST'])
 @login_required
-def new task():
+def new_task():
     g.db = connect_db()
     name = request.form['name']
     date = request.form['due_date']
@@ -84,7 +96,7 @@ def new task():
         return redirect(url_for('tasks'))
 
 #Mark tasks as complete
-@app.route('/complete/<int: task_id>/')
+@app.route('/complete/<int:task_id>/')
 @login_required
 def complete(task_id):
     g.db = connect_db()
@@ -95,7 +107,7 @@ def complete(task_id):
     return redirect(url_for('tasks'))
 
 #Delete tasks
-@app_route('/delete/<int:task_id>/')
+@app.route('/delete/<int:task_id>/')
 @login_required
 def delete_entry(task_id):
     g.db = connect_db()
